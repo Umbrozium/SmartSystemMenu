@@ -127,13 +127,45 @@ jobs:
             -Force
 
       # ============================================================
-      # 5. Upload FINAL, WORKING artifacts
+      # 6. Stage release files into a single folder
       # ============================================================
-      - name: Upload release artifacts
+      - name: Stage release package
+        shell: pwsh
+        run: |
+          $out = "release/SmartSystemMenu"
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+
+          # Launcher
+          Copy-Item `
+            SmartSystemMenu\SmartSystemMenu.exe `
+            $out `
+            -Force
+
+          # Hook DLLs
+          Copy-Item `
+            SmartSystemMenuHook\Release32\SmartSystemMenuHook.dll `
+            $out `
+            -Force
+
+          Copy-Item `
+            SmartSystemMenuHook\Release64\SmartSystemMenuHook64.dll `
+            $out `
+            -Force
+
+          # Config / language files
+          Copy-Item `
+            SmartSystemMenu\Language.xml `
+            $out `
+            -Force
+
+          Copy-Item `
+            SmartSystemMenu\SmartSystemMenu.xml `
+            $out `
+            -Force
+
+      - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SmartSystemMenu-Release
-          path: |
-            SmartSystemMenu/SmartSystemMenu.exe
-            SmartSystemMenuHook/Release32/SmartSystemMenuHook.dll
-            SmartSystemMenuHook/Release64/SmartSystemMenuHook64.dll
+          name: SmartSystemMenu
+          path: release/SmartSystemMenu
+          
