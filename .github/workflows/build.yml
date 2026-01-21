@@ -47,14 +47,6 @@ jobs:
 
           Write-Host "Prepared SmartSystemMenu64.exe from x64 build"
 
-      - name: Prepare launcher embedded executable
-        shell: pwsh
-        run: |
-          Copy-Item `
-            "$env:SMARTSYSTEMMENU64_PATH" `
-            SmartSystemMenu\SmartSystemMenu64.exe `
-            -Force
-
       # ------------------------------------------------------------
       # STEP 3: Build launcher + hooks (normal build)
       # ------------------------------------------------------------
