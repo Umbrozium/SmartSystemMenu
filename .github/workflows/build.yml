@@ -2,12 +2,12 @@ name: Build SmartSystemMenu
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build SmartSystemMenu (full release)
+    name: Build SmartSystemMenu (official layout)
     runs-on: windows-latest
 
     steps:
@@ -21,9 +21,9 @@ jobs:
         run: nuget restore SmartSystemMenu.sln
 
       # ------------------------------------------------------------
-      # STEP 1: Build 64-bit executable ONLY (no launcher embedding)
+      # STEP 1: Build x64 SmartSystemMenu.exe (for embedding)
       # ------------------------------------------------------------
-      - name: Build SmartSystemMenu64.exe (x64)
+      - name: Build x64 SmartSystemMenu (no launcher)
         shell: pwsh
         run: |
           msbuild SmartSystemMenu\SmartSystemMenu.csproj `
@@ -45,12 +45,29 @@ jobs:
             SmartSystemMenu\SmartSystemMenu64.exe `
             -Force
 
-          Write-Host "Prepared SmartSystemMenu64.exe from x64 build"
+      # ------------------------------------------------------------
+      # STEP 2: Build native hooks (both architectures)
+      # ------------------------------------------------------------
+      - name: Build Win32 hook
+        shell: pwsh
+        run: |
+          msbuild SmartSystemMenu.sln `
+            /p:Configuration=Release `
+            /p:Platform=Win32 `
+            /m
+
+      - name: Build x64 hook
+        shell: pwsh
+        run: |
+          msbuild SmartSystemMenu.sln `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /m
 
       # ------------------------------------------------------------
-      # STEP 3: Build launcher + hooks (normal build)
+      # STEP 3: Build launcher (default solution configuration)
       # ------------------------------------------------------------
-      - name: Build launcher and hooks
+      - name: Build SmartSystemMenu launcher
         shell: pwsh
         run: |
           msbuild SmartSystemMenu.sln `
@@ -58,13 +75,13 @@ jobs:
             /m
 
       # ------------------------------------------------------------
-      # STEP 4: Collect final artifacts
+      # STEP 4: Upload final release artifacts (no globs)
       # ------------------------------------------------------------
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: SmartSystemMenu-Release
           path: |
-            **/Release/SmartSystemMenu.exe
-            **/Release32/SmartSystemMenuHook.dll
-            **/Release64/SmartSystemMenuHook64.dll
+            SmartSystemMenu/bin/Release/SmartSystemMenu.exe
+            SmartSystemMenuHook/Release32/SmartSystemMenuHook.dll
+            SmartSystemMenuHook/Release64/SmartSystemMenuHook64.dll
