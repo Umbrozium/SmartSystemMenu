@@ -55,7 +55,6 @@ jobs:
         run: |
           msbuild SmartSystemMenu\SmartSystemMenu.csproj `
             /p:Configuration=Release `
-            /p:Platform="Any CPU" `
             /p:BuildLauncher=true `
             /m
 
