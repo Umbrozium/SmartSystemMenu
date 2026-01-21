@@ -10,8 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SmartSystemMenu</RootNamespace>
     <AssemblyName>SmartSystemMenu</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>9</LangVersion>
   </PropertyGroup>
@@ -377,4 +376,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+
 </Project>
