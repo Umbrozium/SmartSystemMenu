@@ -55,7 +55,7 @@ jobs:
         run: |
           msbuild SmartSystemMenu.sln `
             /p:Configuration=Release `
-            /p:Platform=AnyCPU `
+            /p:Platform="Any CPU" `
             /m
 
       # ------------------------------------------------------------
