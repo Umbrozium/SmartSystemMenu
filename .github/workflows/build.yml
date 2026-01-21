@@ -59,6 +59,19 @@ jobs:
             /p:Platform=x64 `
             /m
 
+      - name: Rename x64 hook DLL
+        shell: pwsh
+        run: |
+          $src = "SmartSystemMenuHook/Release64/SmartSystemMenuHook.dll"
+          if (-not (Test-Path $src)) {
+            Write-Error "x64 hook DLL not found at $src"
+          }
+
+          Move-Item `
+            $src `
+            "SmartSystemMenuHook/Release64/SmartSystemMenuHook64.dll" `
+            -Force
+
       # ------------------------------------------------------------
       # 3. Build launcher ONCE (default solution config)
       # ------------------------------------------------------------
