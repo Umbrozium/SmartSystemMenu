@@ -32,22 +32,29 @@ jobs:
             /p:BuildLauncher=false `
             /m
 
-      - name: Verify SmartSystemMenu64.exe exists
+      - name: Locate SmartSystemMenu64.exe
         shell: pwsh
         run: |
-          $exe = "SmartSystemMenu\bin\x64\Release\SmartSystemMenu64.exe"
-          if (-not (Test-Path $exe)) {
+          $exe = Get-ChildItem `
+            -Path SmartSystemMenu `
+            -Recurse `
+            -Filter SmartSystemMenu64.exe `
+            -File `
+            -ErrorAction SilentlyContinue `
+            | Select-Object -First 1
+
+          if (-not $exe) {
             Write-Error "SmartSystemMenu64.exe was not produced"
           }
 
-      # ------------------------------------------------------------
-      # STEP 2: Copy exe to location expected by launcher embedding
-      # ------------------------------------------------------------
+          Write-Host "Found SmartSystemMenu64.exe at $($exe.FullName)"
+          echo "SMARTSYSTEMMENU64_PATH=$($exe.FullName)" >> $env:GITHUB_ENV
+
       - name: Prepare launcher embedded executable
         shell: pwsh
         run: |
           Copy-Item `
-            SmartSystemMenu\bin\x64\Release\SmartSystemMenu64.exe `
+            "$env:SMARTSYSTEMMENU64_PATH" `
             SmartSystemMenu\SmartSystemMenu64.exe `
             -Force
 
