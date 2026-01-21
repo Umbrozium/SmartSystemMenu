@@ -7,7 +7,6 @@ on:
 
 jobs:
   build:
-    name: Build SmartSystemMenu (official layout)
     runs-on: windows-latest
 
     steps:
@@ -17,13 +16,13 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Restore NuGet packages
+      - name: Restore NuGet
         run: nuget restore SmartSystemMenu.sln
 
       # ------------------------------------------------------------
-      # STEP 1: Build x64 SmartSystemMenu.exe (for embedding)
+      # 1. Build x64 SmartSystemMenu.exe (for embedding)
       # ------------------------------------------------------------
-      - name: Build x64 SmartSystemMenu (no launcher)
+      - name: Build SmartSystemMenu x64 (no launcher)
         shell: pwsh
         run: |
           msbuild SmartSystemMenu\SmartSystemMenu.csproj `
@@ -32,40 +31,36 @@ jobs:
             /p:BuildLauncher=false `
             /m
 
-      - name: Prepare SmartSystemMenu64.exe for embedding
+      - name: Prepare SmartSystemMenu64.exe
         shell: pwsh
         run: |
           $src = "SmartSystemMenu\bin\x64\Release\SmartSystemMenu.exe"
           if (-not (Test-Path $src)) {
-            Write-Error "x64 SmartSystemMenu.exe was not produced"
+            Write-Error "SmartSystemMenu.exe (x64) missing"
           }
-
-          Copy-Item `
-            $src `
-            SmartSystemMenu\SmartSystemMenu64.exe `
-            -Force
+          Copy-Item $src SmartSystemMenu\SmartSystemMenu64.exe -Force
 
       # ------------------------------------------------------------
-      # STEP 2: Build native hooks (both architectures)
+      # 2. Build hooks DIRECTLY (correct way)
       # ------------------------------------------------------------
-      - name: Build Win32 hook
+      - name: Build 32-bit hook
         shell: pwsh
         run: |
-          msbuild SmartSystemMenu.sln `
+          msbuild SmartSystemMenuHook\SmartSystemMenuHook.vcxproj `
             /p:Configuration=Release `
             /p:Platform=Win32 `
             /m
 
-      - name: Build x64 hook
+      - name: Build 64-bit hook
         shell: pwsh
         run: |
-          msbuild SmartSystemMenu.sln `
+          msbuild SmartSystemMenuHook\SmartSystemMenuHook.vcxproj `
             /p:Configuration=Release `
             /p:Platform=x64 `
             /m
 
       # ------------------------------------------------------------
-      # STEP 3: Build launcher (default solution configuration)
+      # 3. Build launcher ONCE (default solution config)
       # ------------------------------------------------------------
       - name: Build SmartSystemMenu launcher
         shell: pwsh
@@ -75,7 +70,7 @@ jobs:
             /m
 
       # ------------------------------------------------------------
-      # STEP 4: Upload final release artifacts (no globs)
+      # 4. Upload FINAL artifacts (exact paths)
       # ------------------------------------------------------------
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
