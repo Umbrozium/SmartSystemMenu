@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -19,23 +19,40 @@ namespace SmartSystemMenu.Settings
 
         public IList<WindowState> Find(string className, string processName)
         {
+            // ==================== ADDED ====================
+            className = WindowUtils.NormalizeClassName(className);
+            // ===============================================
+
             var items = Items
-                .Where(x => string.Compare(x.ClassName, className, StringComparison.CurrentCulture) == 0 && string.Compare(x.ProcessName, processName, StringComparison.CurrentCultureIgnoreCase) == 0)
+                .Where(x =>
+                    string.Compare(x.ClassName, className, StringComparison.CurrentCulture) == 0 &&
+                    string.Compare(x.ProcessName, processName, StringComparison.CurrentCultureIgnoreCase) == 0)
                 .ToList();
             return items;
         }
 
         public IList<WindowState> Find(string className)
         {
+            // ==================== ADDED ====================
+            className = WindowUtils.NormalizeClassName(className);
+            // ===============================================
+
             var items = Items
-                .Where(x => string.Compare(x.ClassName, className, StringComparison.CurrentCulture) == 0)
+                .Where(x =>
+                    string.Compare(x.ClassName, className, StringComparison.CurrentCulture) == 0)
                 .ToList();
             return items;
         }
 
         public void Remove(string className, string processName)
         {
-            Items.RemoveAll(x => string.Compare(x.ClassName, className, StringComparison.CurrentCulture) == 0 && string.Compare(x.ProcessName, processName, StringComparison.CurrentCultureIgnoreCase) == 0);
+            // ==================== ADDED ====================
+            className = WindowUtils.NormalizeClassName(className);
+            // ===============================================
+
+            Items.RemoveAll(x =>
+                string.Compare(x.ClassName, className, StringComparison.CurrentCulture) == 0 &&
+                string.Compare(x.ProcessName, processName, StringComparison.CurrentCultureIgnoreCase) == 0);
         }
 
         public static WindowSettings Read(string fileName)
@@ -47,10 +64,16 @@ namespace SmartSystemMenu.Settings
                 .Select(x => {
                     var positionElement = x.XPathSelectElement("./position");
                     var systemMenuElement = x.XPathSelectElement("./systemMenu");
+
                     return new WindowState
                     {
                         ProcessName = x.Attribute("processName").Value,
-                        ClassName = x.Attribute("className").Value,
+
+                        // ============ OPTIONAL BUT RECOMMENDED ============
+                        ClassName = WindowUtils.NormalizeClassName(
+                            x.Attribute("className").Value),
+                        // ==================================================
+
                         Left = int.Parse(positionElement.Attribute("left").Value),
                         Top = int.Parse(positionElement.Attribute("top").Value),
                         Width = int.Parse(positionElement.Attribute("width").Value),
