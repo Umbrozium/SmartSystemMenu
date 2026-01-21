@@ -1,0 +1,77 @@
+name: Build SmartSystemMenu
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-x64:
+    name: Build SmartSystemMenu64 (x64)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore SmartSystemMenu.sln
+
+      - name: Build 64-bit executable
+        run: >
+          msbuild SmartSystemMenu.sln
+          /p:Configuration=Release
+          /p:Platform=x64
+          /m
+
+      - name: Upload SmartSystemMenu64.exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartSystemMenu64
+          path: |
+            **/bin/x64/Release/SmartSystemMenu64.exe
+
+  build-launcher:
+    name: Build Launcher and Hooks
+    runs-on: windows-latest
+    needs: build-x64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore SmartSystemMenu.sln
+
+      - name: Download SmartSystemMenu64.exe artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: SmartSystemMenu64
+          path: artifacts/SmartSystemMenu64
+
+      - name: Copy embedded executable to expected location
+        run: |
+          copy artifacts\SmartSystemMenu64\SmartSystemMenu64.exe `
+               SmartSystemMenu\bin\x64\Release\SmartSystemMenu64.exe
+
+      - name: Build launcher and hooks
+        run: >
+          msbuild SmartSystemMenu.sln
+          /p:Configuration=Release
+          /p:Platform=AnyCPU
+          /m
+
+      - name: Upload final release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartSystemMenu-Release
+          path: |
+            **/bin/**/Release/SmartSystemMenu.exe
+            **/bin/**/Release/SmartSystemMenuHook.dll
+            **/bin/**/Release/SmartSystemMenuHook64.dll
