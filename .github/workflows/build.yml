@@ -35,12 +35,9 @@ jobs:
         run: nuget restore SmartSystemMenu.sln
 
       - name: Build SmartSystemMenu64
+        shell: pwsh
         run: |
-          msbuild SmartSystemMenu.sln ^
-          /t:SmartSystemMenu64 ^
-          /p:Configuration=Release ^
-          /p:Platform=x64 ^
-          /m
+          msbuild SmartSystemMenu.sln /t:Build /p:Configuration=Release /p:Platform=x64 /m
 
       - name: Upload SmartSystemMenu64.exe artifact
         uses: actions/upload-artifact@v4
