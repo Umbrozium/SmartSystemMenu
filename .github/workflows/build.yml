@@ -61,23 +61,36 @@ jobs:
       - name: Normalize launcher output
         shell: pwsh
         run: |
-          $exe = Get-ChildItem `
+          $candidates = Get-ChildItem `
             -Path SmartSystemMenu/bin `
             -Recurse `
             -Filter SmartSystemMenu.exe `
             -File `
             | Where-Object {
-                $_.FullName -notmatch '\\obj\\' -and
-                $_.FullName -match 'Any CPU'
-              } `
-            | Select-Object -First 1
+                $_.FullName -notmatch '\\obj\\'
+              }
 
-          if (-not $exe) {
-            Write-Error "Launcher SmartSystemMenu.exe not found"
+          if (-not $candidates) {
+            Write-Error "No SmartSystemMenu.exe found under SmartSystemMenu/bin"
           }
 
+          Write-Host "Found candidates:"
+          $candidates | ForEach-Object { Write-Host $_.FullName }
+
+          # Heuristic:
+          # Prefer non-x64 build (launcher), avoid payload build
+          $launcher = $candidates `
+            | Where-Object { $_.FullName -notmatch '\\x64\\' } `
+            | Select-Object -First 1
+
+          if (-not $launcher) {
+            Write-Error "Launcher SmartSystemMenu.exe could not be identified"
+          }
+
+          Write-Host "Using launcher at $($launcher.FullName)"
+
           Copy-Item `
-            $exe.FullName `
+            $launcher.FullName `
             SmartSystemMenu\SmartSystemMenu.exe `
             -Force
 
