@@ -2,31 +2,17 @@ name: Build SmartSystemMenu
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build-x64:
-    name: Build SmartSystemMenu64 (x64)
+  build:
+    name: Build SmartSystemMenu (full release)
     runs-on: windows-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Install .NET Framework 4.0 Targeting Pack
-        shell: pwsh
-        run: |
-          $vsInstaller = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
-          & $vsInstaller modify `
-          --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" `
-          --add Microsoft.Net.Component.4.0.TargetingPack `
-          --quiet --norestart --wait
-
-      - name: Verify .NET 4.0 reference assemblies
-        shell: pwsh
-        run: |
-          Test-Path "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
@@ -34,60 +20,56 @@ jobs:
       - name: Restore NuGet packages
         run: nuget restore SmartSystemMenu.sln
 
-      - name: Build SmartSystemMenu64
+      # ------------------------------------------------------------
+      # STEP 1: Build 64-bit executable ONLY (no launcher embedding)
+      # ------------------------------------------------------------
+      - name: Build SmartSystemMenu64.exe (x64)
         shell: pwsh
         run: |
           msbuild SmartSystemMenu\SmartSystemMenu.csproj `
-          /p:Configuration=Release `
-          /p:Platform=x64 `
-          /p:BuildLauncher=false `
-          /m
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /p:BuildLauncher=false `
+            /m
 
-      - name: Upload SmartSystemMenu64.exe artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: SmartSystemMenu64
-          path: |
-            **/bin/x64/Release/SmartSystemMenu64.exe
-
-  build-launcher:
-    name: Build Launcher and Hooks
-    runs-on: windows-latest
-    needs: build-x64
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Restore NuGet packages
-        run: nuget restore SmartSystemMenu.sln
-
-      - name: Download SmartSystemMenu64
-        uses: actions/download-artifact@v4
-        with:
-          name: SmartSystemMenu64
-          path: SmartSystemMenu/SmartSystemMenu
-
-      - name: Copy embedded executable to expected location
+      - name: Verify SmartSystemMenu64.exe exists
+        shell: pwsh
         run: |
-          copy artifacts\SmartSystemMenu64\SmartSystemMenu64.exe `
-               SmartSystemMenu\bin\x64\Release\SmartSystemMenu64.exe
+          $exe = "SmartSystemMenu\bin\x64\Release\SmartSystemMenu64.exe"
+          if (-not (Test-Path $exe)) {
+            Write-Error "SmartSystemMenu64.exe was not produced"
+          }
 
+      # ------------------------------------------------------------
+      # STEP 2: Copy exe to location expected by launcher embedding
+      # ------------------------------------------------------------
+      - name: Prepare launcher embedded executable
+        shell: pwsh
+        run: |
+          Copy-Item `
+            SmartSystemMenu\bin\x64\Release\SmartSystemMenu64.exe `
+            SmartSystemMenu\SmartSystemMenu64.exe `
+            -Force
+
+      # ------------------------------------------------------------
+      # STEP 3: Build launcher + hooks (normal build)
+      # ------------------------------------------------------------
       - name: Build launcher and hooks
+        shell: pwsh
         run: |
-          msbuild SmartSystemMenu.sln ^
-          /p:Configuration=Release ^
-          /p:Platform=AnyCPU ^
-          /m
+          msbuild SmartSystemMenu.sln `
+            /p:Configuration=Release `
+            /p:Platform=AnyCPU `
+            /m
 
-      - name: Upload final release artifacts
+      # ------------------------------------------------------------
+      # STEP 4: Collect final artifacts
+      # ------------------------------------------------------------
+      - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: SmartSystemMenu-Release
           path: |
-            **/bin/**/Release/SmartSystemMenu.exe
-            **/bin/**/Release/SmartSystemMenuHook.dll
-            **/bin/**/Release/SmartSystemMenuHook64.dll
+            **/Release/SmartSystemMenu.exe
+            **/Release32/SmartSystemMenuHook.dll
+            **/Release64/SmartSystemMenuHook64.dll
