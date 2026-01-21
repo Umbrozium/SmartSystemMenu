@@ -29,6 +29,11 @@ namespace SmartSystemMenu.Utils
             if (string.IsNullOrEmpty(className))
                 return className;
 
+            if (className.StartsWith("Afx:", StringComparison.Ordinal))
+            {
+                return "Afx:*";
+            }
+            
             var match = HwndWrapperRegex.Match(className);
             if (!match.Success)
                 return className;
