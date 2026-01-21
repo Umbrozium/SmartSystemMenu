@@ -19,10 +19,10 @@ jobs:
       - name: Restore NuGet
         run: nuget restore SmartSystemMenu.sln
 
-      # ------------------------------------------------------------
-      # 1. Build x64 SmartSystemMenu.exe (for embedding)
-      # ------------------------------------------------------------
-      - name: Build SmartSystemMenu x64 (no launcher)
+      # ============================================================
+      # 1. Build x64 SmartSystemMenu.exe (payload only, no launcher)
+      # ============================================================
+      - name: Build SmartSystemMenu x64 payload
         shell: pwsh
         run: |
           msbuild SmartSystemMenu\SmartSystemMenu.csproj `
@@ -31,19 +31,38 @@ jobs:
             /p:BuildLauncher=false `
             /m
 
+      # ============================================================
+      # 2. Prepare embedded payload
+      # ============================================================
       - name: Prepare SmartSystemMenu64.exe
         shell: pwsh
         run: |
           $src = "SmartSystemMenu\bin\x64\Release\SmartSystemMenu.exe"
           if (-not (Test-Path $src)) {
-            Write-Error "SmartSystemMenu.exe (x64) missing"
+            Write-Error "x64 SmartSystemMenu.exe was not produced"
           }
-          Copy-Item $src SmartSystemMenu\SmartSystemMenu64.exe -Force
 
-      # ------------------------------------------------------------
-      # 2. Build hooks DIRECTLY (correct way)
-      # ------------------------------------------------------------
-      - name: Build 32-bit hook
+          Copy-Item `
+            $src `
+            SmartSystemMenu\SmartSystemMenu64.exe `
+            -Force
+
+      # ============================================================
+      # 3. Build launcher ONCE (this embeds SmartSystemMenu64.exe)
+      # ============================================================
+      - name: Build SmartSystemMenu launcher
+        shell: pwsh
+        run: |
+          msbuild SmartSystemMenu\SmartSystemMenu.csproj `
+            /p:Configuration=Release `
+            /p:Platform=AnyCPU `
+            /p:BuildLauncher=true `
+            /m
+
+      # ============================================================
+      # 4. Build native hook DLLs (direct project builds)
+      # ============================================================
+      - name: Build Win32 hook
         shell: pwsh
         run: |
           msbuild SmartSystemMenuHook\SmartSystemMenuHook.vcxproj `
@@ -51,7 +70,7 @@ jobs:
             /p:Platform=Win32 `
             /m
 
-      - name: Build 64-bit hook
+      - name: Build x64 hook
         shell: pwsh
         run: |
           msbuild SmartSystemMenuHook\SmartSystemMenuHook.vcxproj `
@@ -62,53 +81,24 @@ jobs:
       - name: Rename x64 hook DLL
         shell: pwsh
         run: |
-          $src = "SmartSystemMenuHook/Release64/SmartSystemMenuHook.dll"
+          $src = "SmartSystemMenuHook\Release64\SmartSystemMenuHook.dll"
           if (-not (Test-Path $src)) {
-            Write-Error "x64 hook DLL not found at $src"
+            Write-Error "x64 hook DLL not found"
           }
 
           Move-Item `
             $src `
-            "SmartSystemMenuHook/Release64/SmartSystemMenuHook64.dll" `
+            "SmartSystemMenuHook\Release64\SmartSystemMenuHook64.dll" `
             -Force
 
-      # ------------------------------------------------------------
-      # 3. Build launcher ONCE (default solution config)
-      # ------------------------------------------------------------
-      - name: Build SmartSystemMenu launcher
-        shell: pwsh
-        run: |
-          msbuild SmartSystemMenu.sln `
-            /p:Configuration=Release `
-            /m
-
-      - name: Locate SmartSystemMenu launcher
-        shell: pwsh
-        run: |
-          $exe = Get-ChildItem `
-            -Path SmartSystemMenu `
-            -Recurse `
-            -Filter SmartSystemMenu.exe `
-            -File `
-            | Where-Object { $_.FullName -notmatch '\\obj\\' } `
-            | Select-Object -First 1
-
-          if (-not $exe) {
-            Write-Error "SmartSystemMenu launcher executable not found"
-          }
-
-          Write-Host "Found launcher at $($exe.FullName)"
-          Copy-Item `
-            $exe.FullName `
-            SmartSystemMenu\SmartSystemMenu.exe `
-            -Force
-
+      # ============================================================
+      # 5. Upload FINAL, WORKING artifacts
+      # ============================================================
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: SmartSystemMenu-Release
           path: |
-            SmartSystemMenu/SmartSystemMenu.exe
+            SmartSystemMenu/bin/Release/SmartSystemMenu.exe
             SmartSystemMenuHook/Release32/SmartSystemMenuHook.dll
             SmartSystemMenuHook/Release64/SmartSystemMenuHook64.dll
-
