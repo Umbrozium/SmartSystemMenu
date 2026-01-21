@@ -55,8 +55,32 @@ jobs:
         run: |
           msbuild SmartSystemMenu\SmartSystemMenu.csproj `
             /p:Configuration=Release `
+            /p:Platform="Any CPU" `
             /p:BuildLauncher=true `
             /m
+
+      - name: Normalize launcher output
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem `
+            -Path SmartSystemMenu/bin `
+            -Recurse `
+            -Filter SmartSystemMenu.exe `
+            -File `
+            | Where-Object {
+                $_.FullName -notmatch '\\obj\\' -and
+                $_.FullName -match 'Any CPU'
+              } `
+            | Select-Object -First 1
+
+          if (-not $exe) {
+            Write-Error "Launcher SmartSystemMenu.exe not found"
+          }
+
+          Copy-Item `
+            $exe.FullName `
+            SmartSystemMenu\SmartSystemMenu.exe `
+            -Force
 
       # ============================================================
       # 4. Build native hook DLLs (direct project builds)
@@ -98,6 +122,6 @@ jobs:
         with:
           name: SmartSystemMenu-Release
           path: |
-            SmartSystemMenu/bin/Release/SmartSystemMenu.exe
+            SmartSystemMenu/SmartSystemMenu.exe
             SmartSystemMenuHook/Release32/SmartSystemMenuHook.dll
             SmartSystemMenuHook/Release64/SmartSystemMenuHook64.dll
