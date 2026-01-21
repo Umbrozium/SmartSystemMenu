@@ -82,14 +82,33 @@ jobs:
             /p:Configuration=Release `
             /m
 
-      # ------------------------------------------------------------
-      # 4. Upload FINAL artifacts (exact paths)
-      # ------------------------------------------------------------
+      - name: Locate SmartSystemMenu launcher
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem `
+            -Path SmartSystemMenu `
+            -Recurse `
+            -Filter SmartSystemMenu.exe `
+            -File `
+            | Where-Object { $_.FullName -notmatch '\\obj\\' } `
+            | Select-Object -First 1
+
+          if (-not $exe) {
+            Write-Error "SmartSystemMenu launcher executable not found"
+          }
+
+          Write-Host "Found launcher at $($exe.FullName)"
+          Copy-Item `
+            $exe.FullName `
+            SmartSystemMenu\SmartSystemMenu.exe `
+            -Force
+
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: SmartSystemMenu-Release
           path: |
-            SmartSystemMenu/bin/Release/SmartSystemMenu.exe
+            SmartSystemMenu/SmartSystemMenu.exe
             SmartSystemMenuHook/Release32/SmartSystemMenuHook.dll
             SmartSystemMenuHook/Release64/SmartSystemMenuHook64.dll
+
