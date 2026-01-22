@@ -13,6 +13,7 @@ namespace SmartSystemMenu
         private readonly ContextMenuStrip _systemTrayMenu;
         private readonly ToolStripMenuItem _menuItemAutoStart;
         private readonly ToolStripMenuItem _menuItemRestore;
+        private readonly ToolStripMenuItem _menuItemHideFromTray;
         private readonly ToolStripMenuItem _menuItemSettings;
         private readonly ToolStripMenuItem _menuItemAbout;
         private readonly ToolStripMenuItem _menuItemExit;
@@ -26,12 +27,14 @@ namespace SmartSystemMenu
         public event EventHandler MenuItemSettingsClick;
         public event EventHandler MenuItemAboutClick;
         public event EventHandler MenuItemExitClick;
+        public event EventHandler MenuItemHideFromTrayClick;
         public event EventHandler<EventArgs<long>> MenuItemRestoreClick;
 
         public SystemTrayMenu(ApplicationSettings settings)
         {
             _menuItemAutoStart = new ToolStripMenuItem();
             _menuItemRestore = new ToolStripMenuItem();
+            _menuItemHideFromTray = new ToolStripMenuItem();
             _menuItemSettings = new ToolStripMenuItem();
             _menuItemAbout = new ToolStripMenuItem();
             _menuItemSeparator1 = new ToolStripSeparator();
@@ -54,6 +57,11 @@ namespace SmartSystemMenu
                 _menuItemAutoStart.Size = new Size(175, 22);
                 _menuItemAutoStart.Text = _settings.Language.GetValue("mi_auto_start");
                 _menuItemAutoStart.Click += ItemAutoStartClick;
+
+                _menuItemHideFromTray.Name = "miHideFromTray";
+                _menuItemHideFromTray.Size = new Size(175, 22);
+                _menuItemHideFromTray.Text = "Hide from tray";
+                _menuItemHideFromTray.Click += ItemHideFromTrayClick;
 
                 _menuItemSettings.Name = "miSettings";
                 _menuItemSettings.Size = new Size(175, 22);
@@ -133,11 +141,11 @@ namespace SmartSystemMenu
                         _menuItemRestore.DropDownItems.Add(subMenuItem);
                     }
 
-                    _systemTrayMenu.Items.AddRange(new ToolStripItem[] { _menuItemAutoStart, _menuItemSeparator1, _menuItemRestore, _menuItemSettings, _menuItemAbout, _menuItemSeparator2, _menuItemExit });
+                    _systemTrayMenu.Items.AddRange(new ToolStripItem[] { _menuItemAutoStart, _menuItemHideFromTray, _menuItemSeparator1, _menuItemRestore, _menuItemSettings, _menuItemAbout, _menuItemSeparator2, _menuItemExit });
                 }
                 else
                 {
-                    _systemTrayMenu.Items.AddRange(new ToolStripItem[] { _menuItemAutoStart, _menuItemSeparator1, _menuItemSettings, _menuItemAbout, _menuItemSeparator2, _menuItemExit });
+                    _systemTrayMenu.Items.AddRange(new ToolStripItem[] { _menuItemAutoStart, _menuItemHideFromTray, _menuItemSeparator1, _menuItemSettings, _menuItemAbout, _menuItemSeparator2, _menuItemExit });
                 }
 
                 _systemTrayMenu.Name = "systemTrayMenu";
@@ -156,6 +164,16 @@ namespace SmartSystemMenu
         public void CheckMenuItemAutoStart(bool check)
         {
             _menuItemAutoStart.Checked = check;
+        }
+
+        public void Hide()
+        {
+            _icon.Visible = false;
+        }
+
+        public void Show()
+        {
+            _icon.Visible = true;
         }
 
         public void Dispose()
@@ -217,6 +235,11 @@ namespace SmartSystemMenu
         private void ItemExitClick(object sender, EventArgs e)
         {
             var handler = MenuItemExitClick;
+            handler?.Invoke(sender, e);
+        }
+        private void ItemHideFromTrayClick(object sender, EventArgs e)
+        {
+            var handler = MenuItemHideFromTrayClick;
             handler?.Invoke(sender, e);
         }
     }

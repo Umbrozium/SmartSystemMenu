@@ -41,6 +41,7 @@ namespace SmartSystemMenu.Forms
         private HotKeyHook _hotKeyHook;
         private MouseHook _hotKeyMouseHook;
         private Process _64BitProcess;
+        private bool _trayHidden;
 #endif
 
         public MainForm(ApplicationSettings settings, WindowSettings windowSettings, IntPtr parentHandle)
@@ -91,6 +92,7 @@ namespace SmartSystemMenu.Forms
                 _systemTrayMenu.MenuItemAboutClick += MenuItemAboutClick;
                 _systemTrayMenu.MenuItemExitClick += MenuItemExitClick;
                 _systemTrayMenu.MenuItemRestoreClick += MenuItemRestoreClick;
+                _systemTrayMenu.MenuItemHideFromTrayClick += MenuItemHideFromTrayClick;
                 _systemTrayMenu.Create();
                 _systemTrayMenu.CheckMenuItemAutoStart(AutoStarter.IsAutoStartByRegisterEnabled(AssemblyUtils.AssemblyProductName, AssemblyUtils.AssemblyLocation));
             }
@@ -180,6 +182,31 @@ namespace SmartSystemMenu.Forms
             Hide();
         }
 
+#if WIN32
+        private void MenuItemHideFromTrayClick(object sender, EventArgs e)
+        {
+            HideTrayIcon();
+        }
+
+        private void HideTrayIcon()
+        {
+            if (_systemTrayMenu == null || _trayHidden)
+                return;
+
+            _systemTrayMenu.Hide();
+            _trayHidden = true;
+        }
+
+        private void ShowTrayIcon()
+        {
+            if (_systemTrayMenu == null || !_trayHidden)
+                return;
+
+            _systemTrayMenu.Show();
+            _trayHidden = false;
+        }
+#endif
+
         private void HotKeyMouseHooked(object sender, EventArgs<SmartSystemMenu.Native.Structs.Point> e)
         {
             if (_settings.Closer.Type == WindowCloserType.CloseForegroundWindow)
@@ -264,6 +291,12 @@ namespace SmartSystemMenu.Forms
 
             if (m.Msg == WM_COPYDATA)
             {
+                #if WIN32
+                if (_trayHidden)
+                {
+                    ShowTrayIcon();
+                }
+                #endif
                 var copyData = (CopyDataStruct)Marshal.PtrToStructure(m.LParam, typeof(CopyDataStruct));
                 var identifier = copyData.dwData.ToInt64();
                 if (identifier == SEND_CHILD_HANDLE)
