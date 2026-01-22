@@ -21,22 +21,6 @@ namespace SmartSystemMenu
     {
         private static Mutex _mutex;
 
-        private static void SendRestoreMessage()
-        {
-            var hwnd = WindowUtils.FindMainWindow();
-            if (hwnd == IntPtr.Zero)
-                return;
-
-            var data = new CopyDataStruct
-            {
-                dwData = new IntPtr(MenuItemId.SC_RESTORE),
-                cbData = 0,
-                lpData = IntPtr.Zero
-            };
-
-            User32.SendMessage(hwnd, WM_COPYDATA, IntPtr.Zero, ref data);
-        }
-
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -125,11 +109,6 @@ namespace SmartSystemMenu
 
             var parentHandle = toggleParser.HasToggle("parentHandle") && long.TryParse(toggleParser.GetToggleValueOrDefault("parentHandle", string.Empty), out var parentHandleValue) ? parentHandleValue : (long?)null;
 
-#if WIN32
-            var mutexName = "SmartSystemMenuMutex";
-#else
-            var mutexName = "SmartSystemMenuMutex64";
-#endif
             #if WIN32
             var mutexName = "SmartSystemMenuMutex";
             #else
