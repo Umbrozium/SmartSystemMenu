@@ -14,12 +14,32 @@ using SmartSystemMenu.Native;
 using SmartSystemMenu.Native.Enums;
 using SmartSystemMenu.Settings;
 using SmartSystemMenu.Extensions;
+using SmartSystemMenu.Native.Structs;
+using static SmartSystemMenu.Native.User32;
+using static SmartSystemMenu.Native.Constants;
 
 namespace SmartSystemMenu
 {
     static class Program
     {
         private static Mutex _mutex;
+
+        private static void SendRestoreMessage()
+        {
+            // Find the main window by title (SmartSystemMenu already sets this)
+            var hwnd = FindWindow(null, AssemblyUtils.AssemblyTitle);
+            if (hwnd == IntPtr.Zero)
+                return;
+
+            var data = new CopyDataStruct
+            {
+                dwData = new IntPtr(MenuItemId.SC_RESTORE),
+                cbData = 0,
+                lpData = IntPtr.Zero
+            };
+
+            SendMessage(hwnd, WM_COPYDATA, IntPtr.Zero, ref data);
+        }
 
         /// <summary>
         /// The main entry point for the application.
@@ -117,7 +137,7 @@ namespace SmartSystemMenu
             _mutex = new Mutex(false, mutexName, out var createNew);
             if (!createNew)
             {
-                CommandLine.Send(MenuItemId.SC_RESTORE);
+                SendRestoreMessage();
                 return;
             }
 
