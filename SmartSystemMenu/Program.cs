@@ -20,25 +20,6 @@ namespace SmartSystemMenu
     static class Program
     {
         private static Mutex _mutex;
-        private const long SEND_SHOW_TRAY = 0x53544D59; // 'STMY'
-
-        private static void SendShowTrayMessage()
-        {
-            var hwnd = Native.User32.FindWindow(null, AssemblyUtils.AssemblyTitle);
-            if (hwnd == IntPtr.Zero)
-            {
-                return;
-            }
-
-            var data = new CopyDataStruct
-            {
-                dwData = new IntPtr(SEND_SHOW_TRAY),
-                cbData = 0,
-                lpData = IntPtr.Zero
-            };
-
-            Native.User32.SendMessage(hwnd, Native.Constants.WM_COPYDATA, IntPtr.Zero, ref data);
-        }
 
         /// <summary>
         /// The main entry point for the application.
@@ -136,7 +117,7 @@ namespace SmartSystemMenu
             _mutex = new Mutex(false, mutexName, out var createNew);
             if (!createNew)
             {
-                SendShowTrayMessage();
+                CommandLine.Send(MenuItemId.SC_RESTORE);
                 return;
             }
 
