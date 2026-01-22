@@ -26,8 +26,7 @@ namespace SmartSystemMenu
 
         private static void SendRestoreMessage()
         {
-            // Find the main window by title (SmartSystemMenu already sets this)
-            var hwnd = FindWindow(null, AssemblyUtils.AssemblyTitle);
+            var hwnd = User32.FindWindowW(null, AssemblyUtils.AssemblyTitle);
             if (hwnd == IntPtr.Zero)
                 return;
 
@@ -38,7 +37,7 @@ namespace SmartSystemMenu
                 lpData = IntPtr.Zero
             };
 
-            SendMessage(hwnd, WM_COPYDATA, IntPtr.Zero, ref data);
+            User32.SendMessage(hwnd, WM_COPYDATA, IntPtr.Zero, ref data);
         }
 
         /// <summary>
