@@ -14,9 +14,6 @@ using SmartSystemMenu.Native;
 using SmartSystemMenu.Native.Enums;
 using SmartSystemMenu.Settings;
 using SmartSystemMenu.Extensions;
-using SmartSystemMenu.Native.Structs;
-using static SmartSystemMenu.Native.User32;
-using static SmartSystemMenu.Native.Constants;
 
 namespace SmartSystemMenu
 {
@@ -26,7 +23,7 @@ namespace SmartSystemMenu
 
         private static void SendRestoreMessage()
         {
-            var hwnd = User32.FindWindowW(null, AssemblyUtils.AssemblyTitle);
+            var hwnd = WindowUtils.FindMainWindow();
             if (hwnd == IntPtr.Zero)
                 return;
 
@@ -136,7 +133,6 @@ namespace SmartSystemMenu
             _mutex = new Mutex(false, mutexName, out var createNew);
             if (!createNew)
             {
-                SendRestoreMessage();
                 return;
             }
 
