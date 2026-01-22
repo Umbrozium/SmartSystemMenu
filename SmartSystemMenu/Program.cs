@@ -130,6 +130,12 @@ namespace SmartSystemMenu
 #else
             var mutexName = "SmartSystemMenuMutex64";
 #endif
+            #if WIN32
+            var mutexName = "SmartSystemMenuMutex";
+            #else
+            var mutexName = "SmartSystemMenuMutex64";
+            #endif
+
             _mutex = new Mutex(false, mutexName, out var createNew);
             if (!createNew)
             {
