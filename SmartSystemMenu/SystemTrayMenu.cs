@@ -168,7 +168,7 @@ namespace SmartSystemMenu
         {
             if (_notifyIcon != null)
             {
-                _notifyIcon.Visible = visible;
+                _icon.Visible = visible;
             }
         }
 
