@@ -166,7 +166,7 @@ namespace SmartSystemMenu
 
         public void SetVisible(bool visible)
         {
-            if (_notifyIcon != null)
+            if (_created)
             {
                 _icon.Visible = visible;
             }

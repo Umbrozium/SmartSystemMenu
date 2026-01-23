@@ -172,7 +172,7 @@ namespace SmartSystemMenu.Forms
             chkPriority.Checked = settings.SaveSelectedItems.Priority;
             chkMinimizeToTrayAlways.Checked = settings.SaveSelectedItems.MinimizeToTrayAlways;
             chkButtons.Checked = settings.SaveSelectedItems.Buttons;
-            hideTrayIconCheckBox.Checked = settings.SaveSelectedItems.HideTrayIcon;
+            hideTrayIconCheckBox.Checked = settings.HideTrayIcon;
 
             var items = new List<Settings.MenuItem>();
             foreach(var item in settings.MenuItems.Items)
