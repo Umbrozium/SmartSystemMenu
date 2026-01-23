@@ -328,15 +328,8 @@ namespace SmartSystemMenu.Forms
                 _settingsForm = new SettingsForm(_settings);
                 _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) =>
                 {
-                    _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) =>
-                    {
-                        _settings = ea.Entity;
-
-                        if (_systemTrayMenu != null)
-                        {
-                            _systemTrayMenu.SetVisible(!_settings.HideTrayIcon);
-                        }
-                    };
+                    _settings = ea.Entity;
+                    ApplyTrayIconVisibility();
                 };
             }
 
