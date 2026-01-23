@@ -154,6 +154,7 @@ namespace SmartSystemMenu.Forms
             this.tabpGeneral.Controls.Add(this.grpbCloser);
             this.tabpGeneral.Controls.Add(this.grpbLanguage);
             this.tabpGeneral.Controls.Add(this.grpbProcessExclusions);
+            this.grpbProcessExclusions.Controls.Add(this.hideTrayIconCheckBox);
             this.tabpGeneral.Location = new System.Drawing.Point(4, 25);
             this.tabpGeneral.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tabpGeneral.Name = "tabpGeneral";
