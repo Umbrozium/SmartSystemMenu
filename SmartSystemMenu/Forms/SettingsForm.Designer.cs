@@ -41,6 +41,7 @@ namespace SmartSystemMenu.Forms
             this.grpbLanguage = new System.Windows.Forms.GroupBox();
             this.cmbLanguage = new System.Windows.Forms.ComboBox();
             this.grpbProcessExclusions = new System.Windows.Forms.GroupBox();
+            this.hideTrayIconCheckBox = new System.Windows.Forms.CheckBox();
             this.btnProcessExclusionDown = new System.Windows.Forms.Button();
             this.btnProcessExclusionUp = new System.Windows.Forms.Button();
             this.btnAddProcessExclusion = new System.Windows.Forms.Button();
@@ -154,7 +155,6 @@ namespace SmartSystemMenu.Forms
             this.tabpGeneral.Controls.Add(this.grpbCloser);
             this.tabpGeneral.Controls.Add(this.grpbLanguage);
             this.tabpGeneral.Controls.Add(this.grpbProcessExclusions);
-            this.tabpGeneral.Controls.Add(this.hideTrayIconCheckBox);
             this.tabpGeneral.Location = new System.Drawing.Point(4, 25);
             this.tabpGeneral.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tabpGeneral.Name = "tabpGeneral";
