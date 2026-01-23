@@ -231,6 +231,7 @@ namespace SmartSystemMenu.Forms
             this.grpbProcessExclusions.Controls.Add(this.btnProcessExclusionUp);
             this.grpbProcessExclusions.Controls.Add(this.btnAddProcessExclusion);
             this.grpbProcessExclusions.Controls.Add(this.gvProcessExclusions);
+            this.grpbProcessExclusions.Controls.Add(this.hideTrayIconCheckBox);
             this.grpbProcessExclusions.Location = new System.Drawing.Point(11, 197);
             this.grpbProcessExclusions.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.grpbProcessExclusions.Name = "grpbProcessExclusions";
@@ -299,6 +300,17 @@ namespace SmartSystemMenu.Forms
             this.gvProcessExclusions.TabIndex = 0;
             this.gvProcessExclusions.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.GridViewProcessExclusionsCellContentClick);
             this.gvProcessExclusions.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.GridViewProcessExclusionsCellDoubleClick);
+            // 
+            // hideTrayIconCheckBox
+            // 
+            this.hideTrayIconCheckBox = new System.Windows.Forms.CheckBox();
+            this.hideTrayIconCheckBox.AutoSize = true;
+            this.hideTrayIconCheckBox.Location = new System.Drawing.Point(6, 215);
+            this.hideTrayIconCheckBox.Name = "hideTrayIconCheckBox";
+            this.hideTrayIconCheckBox.Size = new System.Drawing.Size(214, 19);
+            this.hideTrayIconCheckBox.TabIndex = 30;
+            this.hideTrayIconCheckBox.Text = "Hide tray icon (requires Apply)";
+            this.hideTrayIconCheckBox.UseVisualStyleBackColor = true;
             // 
             // clmProcessExclusionName
             // 
@@ -1048,7 +1060,6 @@ namespace SmartSystemMenu.Forms
             this.grpbSaveSelectedItems.ResumeLayout(false);
             this.grpbSaveSelectedItems.PerformLayout();
             this.ResumeLayout(false);
-
         }
 
         #endregion
@@ -1128,5 +1139,6 @@ namespace SmartSystemMenu.Forms
         private System.Windows.Forms.DataGridViewButtonColumn clmStartProgramEdit;
         private System.Windows.Forms.DataGridViewButtonColumn clmStartProgramDelete;
         private System.Windows.Forms.CheckBox chkResizable;
+        private System.Windows.Forms.CheckBox hideTrayIconCheckBox;
     }
 }

@@ -92,6 +92,7 @@ namespace SmartSystemMenu.Forms
                 _systemTrayMenu.MenuItemExitClick += MenuItemExitClick;
                 _systemTrayMenu.MenuItemRestoreClick += MenuItemRestoreClick;
                 _systemTrayMenu.Create();
+                _systemTrayMenu.SetVisible(!_settings.HideTrayIcon);
                 _systemTrayMenu.CheckMenuItemAutoStart(AutoStarter.IsAutoStartByRegisterEnabled(AssemblyUtils.AssemblyProductName, AssemblyUtils.AssemblyLocation));
             }
 
@@ -325,7 +326,18 @@ namespace SmartSystemMenu.Forms
             if (_settingsForm == null || _settingsForm.IsDisposed || !_settingsForm.IsHandleCreated)
             {
                 _settingsForm = new SettingsForm(_settings);
-                _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) => { _settings = ea.Entity; };
+                _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) =>
+                {
+                    _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) =>
+                    {
+                        _settings = ea.Entity;
+
+                        if (_systemTrayMenu != null)
+                        {
+                            _systemTrayMenu.SetVisible(!_settings.HideTrayIcon);
+                        }
+                    };
+                };
             }
 
             _settingsForm.Show();
@@ -1298,6 +1310,15 @@ namespace SmartSystemMenu.Forms
                 SetWindowPos(dimForm.Handle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 SetWindowPos(dimForm.Handle, hwnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             }
+        }
+        private void ApplyTrayIconVisibility()
+        {
+        #if WIN32
+            if (_systemTrayMenu == null)
+                return;
+
+            _systemTrayMenu.SetVisible(!_settings.HideTrayIcon);
+        #endif
         }
     }
 }

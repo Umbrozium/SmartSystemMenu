@@ -164,6 +164,14 @@ namespace SmartSystemMenu
             GC.SuppressFinalize(this);
         }
 
+        public void SetVisible(bool visible)
+        {
+            if (_notifyIcon != null)
+            {
+                _notifyIcon.Visible = visible;
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)

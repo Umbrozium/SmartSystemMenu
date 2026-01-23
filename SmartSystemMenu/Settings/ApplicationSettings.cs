@@ -25,6 +25,8 @@ namespace SmartSystemMenu.Settings
 
         public bool EnableHighDPI { get; set; }
 
+        public bool HideTrayIcon { get; set; }
+
         public string LanguageName { get; set; }
 
         public LanguageSettings Language { get; set; }
