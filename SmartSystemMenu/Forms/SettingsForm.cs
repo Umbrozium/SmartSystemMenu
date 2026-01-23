@@ -172,6 +172,7 @@ namespace SmartSystemMenu.Forms
             chkPriority.Checked = settings.SaveSelectedItems.Priority;
             chkMinimizeToTrayAlways.Checked = settings.SaveSelectedItems.MinimizeToTrayAlways;
             chkButtons.Checked = settings.SaveSelectedItems.Buttons;
+            chkHideFromTray.Checked = settings.HideFromTray;
 
             var items = new List<Settings.MenuItem>();
             foreach(var item in settings.MenuItems.Items)
@@ -608,6 +609,7 @@ namespace SmartSystemMenu.Forms
             settings.Sizer.SizerType = (WindowSizerType)cmbSizer.SelectedIndex;
             settings.Sizer.ResizableByDefault = _settings.Sizer.ResizableByDefault;
             settings.EnableHighDPI = chkEnableHighDPI.Checked;
+            settings.HideFromTray = chkHideFromTray.Checked;
             settings.LanguageName = cmbLanguage.SelectedValue == null ? "" : cmbLanguage.SelectedValue.ToString();
 
             if (!settings.Equals(_settings))

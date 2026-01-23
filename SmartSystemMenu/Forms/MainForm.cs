@@ -60,6 +60,9 @@ namespace SmartSystemMenu.Forms
         {
             base.OnLoad(e);
 
+            _systemTrayMenu.Create();
+            ApplyTrayVisibility();
+
 #if WIN32
             if (Environment.Is64BitOperatingSystem)
             {
@@ -182,30 +185,22 @@ namespace SmartSystemMenu.Forms
             Hide();
         }
 
-#if WIN32
-        private void MenuItemHideFromTrayClick(object sender, EventArgs e)
+        private void ApplyTrayVisibility()
         {
-            HideTrayIcon();
-        }
-
-        private void HideTrayIcon()
-        {
-            if (_systemTrayMenu == null || _trayHidden)
+            if (_systemTrayMenu == null)
                 return;
 
-            _systemTrayMenu.Hide();
-            _trayHidden = true;
+            if (_settings.HideFromTray)
+            {
+                _systemTrayMenu.Hide();
+                _trayHidden = true;
+            }
+            else
+            {
+                _systemTrayMenu.Show();
+                _trayHidden = false;
+            }
         }
-
-        private void ShowTrayIcon()
-        {
-            if (_systemTrayMenu == null || !_trayHidden)
-                return;
-
-            _systemTrayMenu.Show();
-            _trayHidden = false;
-        }
-#endif
 
         private void HotKeyMouseHooked(object sender, EventArgs<SmartSystemMenu.Native.Structs.Point> e)
         {
@@ -291,12 +286,6 @@ namespace SmartSystemMenu.Forms
 
             if (m.Msg == WM_COPYDATA)
             {
-                #if WIN32
-                if (_trayHidden)
-                {
-                    ShowTrayIcon();
-                }
-                #endif
                 var copyData = (CopyDataStruct)Marshal.PtrToStructure(m.LParam, typeof(CopyDataStruct));
                 var identifier = copyData.dwData.ToInt64();
                 if (identifier == SEND_CHILD_HANDLE)
@@ -358,7 +347,7 @@ namespace SmartSystemMenu.Forms
             if (_settingsForm == null || _settingsForm.IsDisposed || !_settingsForm.IsHandleCreated)
             {
                 _settingsForm = new SettingsForm(_settings);
-                _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) => { _settings = ea.Entity; };
+                _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) => { _settings = ea.Entity; ApplyTrayVisibility()};
             }
 
             _settingsForm.Show();

@@ -45,6 +45,7 @@ namespace SmartSystemMenu.Forms
             this.btnProcessExclusionUp = new System.Windows.Forms.Button();
             this.btnAddProcessExclusion = new System.Windows.Forms.Button();
             this.gvProcessExclusions = new System.Windows.Forms.DataGridView();
+            this.chkHideFromTray = new System.Windows.Forms.CheckBox();
             this.clmProcessExclusionName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.clmProcessExclusionEdit = new System.Windows.Forms.DataGridViewButtonColumn();
             this.clmProcessExcusionDelete = new System.Windows.Forms.DataGridViewButtonColumn();
@@ -231,6 +232,7 @@ namespace SmartSystemMenu.Forms
             this.grpbProcessExclusions.Controls.Add(this.btnProcessExclusionUp);
             this.grpbProcessExclusions.Controls.Add(this.btnAddProcessExclusion);
             this.grpbProcessExclusions.Controls.Add(this.gvProcessExclusions);
+            this.grpbProcessExclusions.Controls.Add(this.chkHideFromTray);
             this.grpbProcessExclusions.Location = new System.Drawing.Point(11, 197);
             this.grpbProcessExclusions.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.grpbProcessExclusions.Name = "grpbProcessExclusions";
@@ -299,6 +301,16 @@ namespace SmartSystemMenu.Forms
             this.gvProcessExclusions.TabIndex = 0;
             this.gvProcessExclusions.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.GridViewProcessExclusionsCellContentClick);
             this.gvProcessExclusions.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.GridViewProcessExclusionsCellDoubleClick);
+            // 
+            // chkHideFromTray
+            // 
+            this.chkHideFromTray.AutoSize = true;
+            this.chkHideFromTray.Location = new System.Drawing.Point(8, 242);
+            this.chkHideFromTray.Margin = new System.Windows.Forms.Padding(4);
+            this.chkHideFromTray.Name = "chkHideFromTray";
+            this.chkHideFromTray.Size = new System.Drawing.Size(18, 17);
+            this.chkHideFromTray.TabIndex = 4;
+            this.chkHideFromTray.UseVisualStyleBackColor = true;
             // 
             // clmProcessExclusionName
             // 
@@ -1128,5 +1140,6 @@ namespace SmartSystemMenu.Forms
         private System.Windows.Forms.DataGridViewButtonColumn clmStartProgramEdit;
         private System.Windows.Forms.DataGridViewButtonColumn clmStartProgramDelete;
         private System.Windows.Forms.CheckBox chkResizable;
+        private System.Windows.Forms.CheckBox chkHideFromTray;
     }
 }
