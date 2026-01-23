@@ -347,7 +347,7 @@ namespace SmartSystemMenu.Forms
             if (_settingsForm == null || _settingsForm.IsDisposed || !_settingsForm.IsHandleCreated)
             {
                 _settingsForm = new SettingsForm(_settings);
-                _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) => { _settings = ea.Entity; ApplyTrayVisibility()};
+                _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) => { _settings = ea.Entity; ApplyTrayVisibility();};
             }
 
             _settingsForm.Show();
