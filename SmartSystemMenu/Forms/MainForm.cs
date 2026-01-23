@@ -41,7 +41,6 @@ namespace SmartSystemMenu.Forms
         private HotKeyHook _hotKeyHook;
         private MouseHook _hotKeyMouseHook;
         private Process _64BitProcess;
-        private bool _trayHidden;
 #endif
 
         public MainForm(ApplicationSettings settings, WindowSettings windowSettings, IntPtr parentHandle)
@@ -59,9 +58,6 @@ namespace SmartSystemMenu.Forms
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-
-            _systemTrayMenu.Create();
-            ApplyTrayVisibility();
 
 #if WIN32
             if (Environment.Is64BitOperatingSystem)
@@ -95,7 +91,6 @@ namespace SmartSystemMenu.Forms
                 _systemTrayMenu.MenuItemAboutClick += MenuItemAboutClick;
                 _systemTrayMenu.MenuItemExitClick += MenuItemExitClick;
                 _systemTrayMenu.MenuItemRestoreClick += MenuItemRestoreClick;
-                _systemTrayMenu.MenuItemHideFromTrayClick += MenuItemHideFromTrayClick;
                 _systemTrayMenu.Create();
                 _systemTrayMenu.CheckMenuItemAutoStart(AutoStarter.IsAutoStartByRegisterEnabled(AssemblyUtils.AssemblyProductName, AssemblyUtils.AssemblyLocation));
             }
@@ -183,23 +178,6 @@ namespace SmartSystemMenu.Forms
             _cbtHook.Start();
 
             Hide();
-        }
-
-        private void ApplyTrayVisibility()
-        {
-            if (_systemTrayMenu == null)
-                return;
-
-            if (_settings.HideFromTray)
-            {
-                _systemTrayMenu.Hide();
-                _trayHidden = true;
-            }
-            else
-            {
-                _systemTrayMenu.Show();
-                _trayHidden = false;
-            }
         }
 
         private void HotKeyMouseHooked(object sender, EventArgs<SmartSystemMenu.Native.Structs.Point> e)
@@ -347,7 +325,7 @@ namespace SmartSystemMenu.Forms
             if (_settingsForm == null || _settingsForm.IsDisposed || !_settingsForm.IsHandleCreated)
             {
                 _settingsForm = new SettingsForm(_settings);
-                _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) => { _settings = ea.Entity; ApplyTrayVisibility();};
+                _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) => { _settings = ea.Entity; };
             }
 
             _settingsForm.Show();
@@ -462,13 +440,13 @@ namespace SmartSystemMenu.Forms
                     var systemMenuHandle = window.Menu.MenuHandle;
                     if (systemMenuHandle != IntPtr.Zero && !window.Menu.IsMenuItem(systemMenuHandle, MenuItemId.SC_SEPARATOR_BOTTOM))
                     {
-                        CreateMenu(window, processId, processPath);
+                        CreateMenu(window, processId, processPath, false);
                     }
                 }
             }
         }
 
-        private void CreateMenu(Window window, int processId, string processPath)
+        private void CreateMenu(Window window, int processId, string processPath, bool add = true)
         {
             bool isWriteProcess;
 #if WIN32
@@ -492,8 +470,11 @@ namespace SmartSystemMenu.Forms
                     
                     var fileName = Path.GetFileName(processPath);
                     window.NoRestoreMenu = !string.IsNullOrEmpty(fileName) && _settings.NoRestoreMenuProcessNames.Contains(fileName.ToLower());
-                    
-                    _windows.Add(window.Handle, window);
+
+                    if (add)
+                    {
+                        _windows.Add(window.Handle, window);
+                    }
 
                     var windowClassName = window.GetClassName();
                     var isConsoleClassName = string.Compare(windowClassName, Window.ConsoleClassName, StringComparison.CurrentCulture) == 0;

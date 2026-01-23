@@ -158,16 +158,6 @@ namespace SmartSystemMenu
             _menuItemAutoStart.Checked = check;
         }
 
-        public void Hide()
-        {
-            _icon.Visible = false;
-        }
-
-        public void Show()
-        {
-            _icon.Visible = true;
-        }
-
         public void Dispose()
         {
             Dispose(true);

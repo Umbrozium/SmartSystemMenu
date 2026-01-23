@@ -109,12 +109,11 @@ namespace SmartSystemMenu
 
             var parentHandle = toggleParser.HasToggle("parentHandle") && long.TryParse(toggleParser.GetToggleValueOrDefault("parentHandle", string.Empty), out var parentHandleValue) ? parentHandleValue : (long?)null;
 
-            #if WIN32
+#if WIN32
             var mutexName = "SmartSystemMenuMutex";
-            #else
+#else
             var mutexName = "SmartSystemMenuMutex64";
-            #endif
-
+#endif
             _mutex = new Mutex(false, mutexName, out var createNew);
             if (!createNew)
             {
