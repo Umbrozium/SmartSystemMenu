@@ -636,7 +636,6 @@ namespace SmartSystemMenu.Forms
 
             if (!settings.Equals(_settings))
             {
-                // This is the "program restart warning" window
                 MessageBox.Show(_settings.Language.GetValue("message_box_attention_content"), _settings.Language.GetValue("message_box_attention_title"), MessageBoxButtons.OK);
 
                 try
@@ -649,12 +648,6 @@ namespace SmartSystemMenu.Forms
                     {
                         OkClick.Invoke(this, new EventArgs<ApplicationSettings>(settings));
                     }
-
-                    // --- NEW CODE START ---
-                    // Automatically restart the application to apply changes
-                    Application.Restart();
-                    return; 
-                    // --- NEW CODE END ---
                 }
                 catch (Exception ex)
                 {
