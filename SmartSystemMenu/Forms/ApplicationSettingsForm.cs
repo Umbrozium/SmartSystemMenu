@@ -649,14 +649,19 @@ namespace SmartSystemMenu.Forms
                     {
                         OkClick.Invoke(this, new EventArgs<ApplicationSettings>(settings));
                     }
+                    var exePath = Path.Combine(AssemblyUtils.AssemblyDirectory, "SmartSystemMenu.exe");
 
-                    // --- NEW RESTART LOGIC START ---
-                    // Create a hidden cmd process to wait 2 seconds, then restart the app.
-                    // This gives the old process ample time to safely kill the 64-bit child and free the single-instance Mutex.
+                    // 1. Gently ask both processes to close (this ensures the system tray icon is properly disposed).
+                    // 2. Wait 1 second.
+                    // 3. Force kill them just in case they hung, to guarantee the single-instance Mutex is freed.
+                    // 4. Wait 1 second.
+                    // 5. Relaunch the 32-bit application.
+                    var script = $"/c taskkill /IM SmartSystemMenu.exe /IM SmartSystemMenu64.exe > nul 2>&1 & ping 127.0.0.1 -n 2 > nul & taskkill /F /IM SmartSystemMenu.exe /IM SmartSystemMenu64.exe > nul 2>&1 & ping 127.0.0.1 -n 2 > nul & start \"\" \"{exePath}\"";
+
                     var startInfo = new System.Diagnostics.ProcessStartInfo
                     {
                         FileName = "cmd.exe",
-                        Arguments = $"/c ping 127.0.0.1 -n 3 > nul & start \"\" \"{Application.ExecutablePath}\"",
+                        Arguments = script,
                         WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
                         CreateNoWindow = true
                     };
@@ -665,8 +670,7 @@ namespace SmartSystemMenu.Forms
                     
                     // Tell the current app to execute a graceful shutdown
                     Application.Exit();
-                    return; 
-                    // --- NEW RESTART LOGIC END ---
+                    return;
                 }
                 catch (Exception ex)
                 {
