@@ -636,7 +636,6 @@ namespace SmartSystemMenu.Forms
 
             if (!settings.Equals(_settings))
             {
-                // This is the "program restart warning" window
                 MessageBox.Show(_settings.Language.GetValue("message_box_attention_content"), _settings.Language.GetValue("message_box_attention_title"), MessageBoxButtons.OK);
 
                 try
@@ -649,28 +648,6 @@ namespace SmartSystemMenu.Forms
                     {
                         OkClick.Invoke(this, new EventArgs<ApplicationSettings>(settings));
                     }
-                    var exePath = Path.Combine(AssemblyUtils.AssemblyDirectory, "SmartSystemMenu.exe");
-
-                    // 1. Gently ask both processes to close (this ensures the system tray icon is properly disposed).
-                    // 2. Wait 1 second.
-                    // 3. Force kill them just in case they hung, to guarantee the single-instance Mutex is freed.
-                    // 4. Wait 1 second.
-                    // 5. Relaunch the 32-bit application.
-                    var script = $"/c taskkill /IM SmartSystemMenu.exe /IM SmartSystemMenu64.exe > nul 2>&1 & ping 127.0.0.1 -n 2 > nul & taskkill /F /IM SmartSystemMenu.exe /IM SmartSystemMenu64.exe > nul 2>&1 & ping 127.0.0.1 -n 2 > nul & start \"\" \"{exePath}\"";
-
-                    var startInfo = new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = "cmd.exe",
-                        Arguments = script,
-                        WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
-                        CreateNoWindow = true
-                    };
-                    
-                    System.Diagnostics.Process.Start(startInfo);
-                    
-                    // Tell the current app to execute a graceful shutdown
-                    Application.Exit();
-                    return;
                 }
                 catch (Exception ex)
                 {
