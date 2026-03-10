@@ -219,5 +219,13 @@ namespace SmartSystemMenu
             var handler = MenuItemExitClick;
             handler?.Invoke(sender, e);
         }
+
+        public void SetIconVisibility(bool isVisible)
+        {
+            if (_icon != null)
+            {
+                _icon.Visible = isVisible;
+            }
+        }
     }
 }

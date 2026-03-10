@@ -55,6 +55,7 @@ namespace SmartSystemMenu.Forms
             grpbPreviousHotkeys.Text = settings.Language.GetValue("grpb_previous_hotkeys");
             grpbDimmerTransparency.Text = settings.Language.GetValue("grpb_dimmer_transparency");
             chkEnableHighDPI.Text = settings.Language.GetValue("chk_enable_high_dpi");
+            chkHideFromTray.Text = "Hide from tray"; // Or load from language XML if you add it there
             clmProcessExclusionName.HeaderText = settings.Language.GetValue("clm_process_exclusion_name");
             clmProcessExclusionEdit.ToolTipText = settings.Language.GetValue("clm_process_exclusion_edit");
             clmProcessExcusionDelete.ToolTipText = settings.Language.GetValue("clm_process_exclusion_delete");
@@ -145,6 +146,7 @@ namespace SmartSystemMenu.Forms
             cmbSizer.Items.Add(settings.Language.GetValue("sizer_window_client_area"));
             cmbSizer.SelectedIndex = (int)settings.Sizer.SizerType;
             chkEnableHighDPI.Checked = settings.EnableHighDPI;
+            chkHideFromTray.Checked = !settings.ShowSystemTrayIcon; // Invert it, since true means hidden
             chkAeroGlass.Checked = settings.SaveSelectedItems.AeroGlass;
             chkAlwaysOnTop.Checked = settings.SaveSelectedItems.AlwaysOnTop;
             chkHideForAltTab.Checked = settings.SaveSelectedItems.HideForAltTab;
@@ -615,6 +617,7 @@ namespace SmartSystemMenu.Forms
             settings.Sizer.SizerType = (WindowSizerType)cmbSizer.SelectedIndex;
             settings.Sizer.ResizableByDefault = _settings.Sizer.ResizableByDefault;
             settings.EnableHighDPI = chkEnableHighDPI.Checked;
+            settings.ShowSystemTrayIcon = !chkHideFromTray.Checked; // Save inverse value
             settings.LanguageName = cmbLanguage.SelectedValue == null ? "" : cmbLanguage.SelectedValue.ToString();
 
             if (txtNextHotkeys.Tag is KeyboardShortcut nextShortcut)

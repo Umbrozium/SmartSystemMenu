@@ -36,6 +36,7 @@ namespace SmartSystemMenu.Forms
             this.tabpGeneral = new System.Windows.Forms.TabPage();
             this.grpbDisplay = new System.Windows.Forms.GroupBox();
             this.chkEnableHighDPI = new System.Windows.Forms.CheckBox();
+            this.chkHideFromTray = new System.Windows.Forms.CheckBox();
             this.grpbCloser = new System.Windows.Forms.GroupBox();
             this.btnCloser = new System.Windows.Forms.Button();
             this.grpbLanguage = new System.Windows.Forms.GroupBox();
@@ -176,6 +177,7 @@ namespace SmartSystemMenu.Forms
             // grpbDisplay
             // 
             this.grpbDisplay.Controls.Add(this.chkEnableHighDPI);
+            this.grpbDisplay.Controls.Add(this.chkHideFromTray);
             this.grpbDisplay.Location = new System.Drawing.Point(412, 107);
             this.grpbDisplay.Margin = new System.Windows.Forms.Padding(4);
             this.grpbDisplay.Name = "grpbDisplay";
@@ -193,6 +195,16 @@ namespace SmartSystemMenu.Forms
             this.chkEnableHighDPI.Size = new System.Drawing.Size(18, 17);
             this.chkEnableHighDPI.TabIndex = 0;
             this.chkEnableHighDPI.UseVisualStyleBackColor = true;
+            // 
+            // chkHideFromTray
+            // 
+            this.chkHideFromTray.AutoSize = true;
+            this.chkHideFromTray.Location = new System.Drawing.Point(8, 55); // Below chkEnableHighDPI
+            this.chkHideFromTray.Margin = new System.Windows.Forms.Padding(4);
+            this.chkHideFromTray.Name = "chkHideFromTray";
+            this.chkHideFromTray.Size = new System.Drawing.Size(120, 21);
+            this.chkHideFromTray.TabIndex = 1;
+            this.chkHideFromTray.UseVisualStyleBackColor = true;
             // 
             // grpbCloser
             // 
@@ -1173,6 +1185,7 @@ namespace SmartSystemMenu.Forms
         private System.Windows.Forms.Button btnMenuItemUp;
         private System.Windows.Forms.GroupBox grpbDisplay;
         private System.Windows.Forms.CheckBox chkEnableHighDPI;
+        private System.Windows.Forms.CheckBox chkHideFromTray;
         private System.Windows.Forms.TabPage tabpMenuSaveSelectedItems;
         private System.Windows.Forms.GroupBox grpbSaveSelectedItems;
         private System.Windows.Forms.CheckBox chkAeroGlass;

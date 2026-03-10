@@ -324,7 +324,37 @@ namespace SmartSystemMenu.Forms
             if (_settingsForm == null || _settingsForm.IsDisposed || !_settingsForm.IsHandleCreated)
             {
                 _settingsForm = new ApplicationSettingsForm(_settings);
-                _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) => { _settings = ea.Entity; };
+                
+                // Update this event handler:
+                _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) => 
+                { 
+                    _settings = ea.Entity; 
+                    
+                    // Dynamically apply tray visibility
+                    if (_settings.ShowSystemTrayIcon)
+                    {
+                        if (_systemTrayMenu == null)
+                        {
+                            // Create it if it was disabled at startup
+                            _systemTrayMenu = new SystemTrayMenu(_settings);
+                            _systemTrayMenu.MenuItemAutoStartClick += MenuItemAutoStartClick;
+                            _systemTrayMenu.MenuItemSettingsClick += MenuItemSettingsClick;
+                            _systemTrayMenu.MenuItemAboutClick += MenuItemAboutClick;
+                            _systemTrayMenu.MenuItemExitClick += MenuItemExitClick;
+                            _systemTrayMenu.MenuItemRestoreClick += MenuItemRestoreClick;
+                            _systemTrayMenu.Create();
+                            _systemTrayMenu.CheckMenuItemAutoStart(AutoStarter.IsAutoStartByRegisterEnabled(AssemblyUtils.AssemblyProductName, AssemblyUtils.AssemblyLocation));
+                        }
+                        else
+                        {
+                            _systemTrayMenu.SetIconVisibility(true);
+                        }
+                    }
+                    else if (_systemTrayMenu != null)
+                    {
+                        _systemTrayMenu.SetIconVisibility(false);
+                    }
+                };
             }
 
             _settingsForm.Show();
