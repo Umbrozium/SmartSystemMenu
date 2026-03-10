@@ -324,13 +324,12 @@ namespace SmartSystemMenu.Forms
             if (_settingsForm == null || _settingsForm.IsDisposed || !_settingsForm.IsHandleCreated)
             {
                 _settingsForm = new ApplicationSettingsForm(_settings);
-                
-                // Update this event handler:
                 _settingsForm.OkClick += (object s, EventArgs<ApplicationSettings> ea) => 
                 { 
                     _settings = ea.Entity; 
-                    
-                    // Dynamically apply tray visibility
+
+        #if WIN32
+                    // Dynamically apply tray visibility ONLY in the 32-bit (main) process
                     if (_settings.ShowSystemTrayIcon)
                     {
                         if (_systemTrayMenu == null)
@@ -354,6 +353,7 @@ namespace SmartSystemMenu.Forms
                     {
                         _systemTrayMenu.SetIconVisibility(false);
                     }
+        #endif
                 };
             }
 
