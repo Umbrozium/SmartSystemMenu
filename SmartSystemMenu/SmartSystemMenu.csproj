@@ -354,8 +354,10 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(BuildLauncher)' == 'true'">
     <EmbeddedResource Include="SmartSystemMenu64.exe" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Images\ArrowDown.png" />
     <Content Include="Images\ArrowUp.png" />
     <Content Include="Language.xml">
@@ -379,3 +381,4 @@
   -->
 
 </Project>
+
