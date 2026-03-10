@@ -636,6 +636,7 @@ namespace SmartSystemMenu.Forms
 
             if (!settings.Equals(_settings))
             {
+                // This is the "program restart warning" window
                 MessageBox.Show(_settings.Language.GetValue("message_box_attention_content"), _settings.Language.GetValue("message_box_attention_title"), MessageBoxButtons.OK);
 
                 try
@@ -648,6 +649,57 @@ namespace SmartSystemMenu.Forms
                     {
                         OkClick.Invoke(this, new EventArgs<ApplicationSettings>(settings));
                     }
+
+                    if (OkClick != null)
+                    {
+                        OkClick.Invoke(this, new EventArgs<ApplicationSettings>(settings));
+                    }
+
+                    // --- NEW RESTART LOGIC START ---
+                    // 1. Define paths
+                    var exePath = Path.Combine(AssemblyUtils.AssemblyDirectory, "SmartSystemMenu.exe");
+                    var batPath = Path.Combine(Path.GetTempPath(), "SmartSystemMenuRestart.bat");
+
+                    // 2. Build the exact sequence of events
+                    var script = $@"@echo off
+:: Give the settings window a moment to close
+ping 127.0.0.1 -n 2 > nul
+
+:: Gracefully close the 32-bit launcher (which triggers MainForm.OnClosed to delete the tray icon and close the 64-bit child)
+taskkill /IM SmartSystemMenu.exe > nul 2>&1
+
+:: Wait 3 seconds for the application to cleanly unhook and shut down
+ping 127.0.0.1 -n 4 > nul
+
+:: Force kill any stuck processes to guarantee the single-instance Mutex is released
+taskkill /F /IM SmartSystemMenu.exe > nul 2>&1
+taskkill /F /IM SmartSystemMenu64.exe > nul 2>&1
+
+:: Wait 1 second
+ping 127.0.0.1 -n 2 > nul
+
+:: Start the 32-bit launcher again
+start """" ""{exePath}""
+
+:: Self-destruct this temp file
+del ""%~f0""";
+
+                    // 3. Write and execute the script silently
+                    File.WriteAllText(batPath, script);
+
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = batPath,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true
+                    };
+                    
+                    Process.Start(startInfo);
+                    
+                    // 4. Close the settings form naturally so it doesn't block the graceful shutdown
+                    Close();
+                    return; 
+                    // --- NEW RESTART LOGIC END ---
                 }
                 catch (Exception ex)
                 {
