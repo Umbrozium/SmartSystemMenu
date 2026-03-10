@@ -1,0 +1,150 @@
+name: Build SmartSystemMenu
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet
+        run: nuget restore SmartSystemMenu.sln
+
+      # ============================================================
+      # 1. Build x64 SmartSystemMenu.exe (payload only, no launcher)
+      # ============================================================
+      - name: Build SmartSystemMenu x64 payload
+        shell: pwsh
+        run: |
+          msbuild SmartSystemMenu\SmartSystemMenu.csproj `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /p:BuildLauncher=false `
+            /m
+      # ============================================================
+      # 2. Prepare embedded payload
+      # ============================================================
+      - name: Prepare SmartSystemMenu64.exe
+        shell: pwsh
+        run: |
+          $src = "SmartSystemMenu\bin\x64\Release\SmartSystemMenu.exe"
+          if (-not (Test-Path $src)) {
+            Write-Error "x64 SmartSystemMenu.exe was not produced"
+          }
+          Copy-Item `
+            $src `
+            SmartSystemMenu\SmartSystemMenu64.exe `
+            -Force
+      # ============================================================
+      # 3. Build launcher ONCE (this embeds SmartSystemMenu64.exe)
+      # ============================================================
+      - name: Build SmartSystemMenu launcher
+        shell: pwsh
+        run: |
+          msbuild SmartSystemMenu\SmartSystemMenu.csproj `
+            /p:Configuration=Release `
+            /p:BuildLauncher=true `
+            /m
+      - name: Normalize launcher output
+        shell: pwsh
+        run: |
+          $candidates = Get-ChildItem `
+            -Path SmartSystemMenu/bin `
+            -Recurse `
+            -Filter SmartSystemMenu.exe `
+            -File `
+            | Where-Object {
+                $_.FullName -notmatch '\\obj\\'
+              }
+          if (-not $candidates) {
+            Write-Error "No SmartSystemMenu.exe found under SmartSystemMenu/bin"
+          }
+          Write-Host "Found candidates:"
+          $candidates | ForEach-Object { Write-Host $_.FullName }
+          # Heuristic:
+          # Prefer non-x64 build (launcher), avoid payload build
+          $launcher = $candidates `
+            | Where-Object { $_.FullName -notmatch '\\x64\\' } `
+            | Select-Object -First 1
+          if (-not $launcher) {
+            Write-Error "Launcher SmartSystemMenu.exe could not be identified"
+          }
+          Write-Host "Using launcher at $($launcher.FullName)"
+          Copy-Item `
+            $launcher.FullName `
+            SmartSystemMenu\SmartSystemMenu.exe `
+            -Force
+      # ============================================================
+      # 4. Build native hook DLLs (direct project builds)
+      # ============================================================
+      - name: Build Win32 hook
+        shell: pwsh
+        run: |
+          msbuild SmartSystemMenuHook\SmartSystemMenuHook.vcxproj `
+            /p:Configuration=Release `
+            /p:Platform=Win32 `
+            /m
+      - name: Build x64 hook
+        shell: pwsh
+        run: |
+          msbuild SmartSystemMenuHook\SmartSystemMenuHook.vcxproj `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /m
+      - name: Rename x64 hook DLL
+        shell: pwsh
+        run: |
+          $src = "SmartSystemMenuHook\Release64\SmartSystemMenuHook.dll"
+          if (-not (Test-Path $src)) {
+            Write-Error "x64 hook DLL not found"
+          }
+          Move-Item `
+            $src `
+            "SmartSystemMenuHook\Release64\SmartSystemMenuHook64.dll" `
+            -Force
+      # ============================================================
+      # 6. Stage release files into a single folder
+      # ============================================================
+      - name: Stage release package
+        shell: pwsh
+        run: |
+          $out = "release/SmartSystemMenu"
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          # Launcher
+          Copy-Item `
+            SmartSystemMenu\SmartSystemMenu.exe `
+            $out `
+            -Force
+          # Hook DLLs
+          Copy-Item `
+            SmartSystemMenuHook\Release32\SmartSystemMenuHook.dll `
+            $out `
+            -Force
+          Copy-Item `
+            SmartSystemMenuHook\Release64\SmartSystemMenuHook64.dll `
+            $out `
+            -Force
+          # Config / language files
+          Copy-Item `
+            SmartSystemMenu\Language.xml `
+            $out `
+            -Force
+          Copy-Item `
+            SmartSystemMenu\SmartSystemMenu.xml `
+            $out `
+            -Force
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartSystemMenu
+          path: release/SmartSystemMenu
+          
