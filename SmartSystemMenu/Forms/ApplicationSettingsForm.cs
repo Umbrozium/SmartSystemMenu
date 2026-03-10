@@ -687,14 +687,14 @@ del ""%~f0""";
                     // 3. Write and execute the script silently
                     File.WriteAllText(batPath, script);
 
-                    var startInfo = new ProcessStartInfo
+                    var startInfo = new System.Diagnostics.ProcessStartInfo
                     {
                         FileName = batPath,
-                        WindowStyle = ProcessWindowStyle.Hidden,
+                        WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
                         CreateNoWindow = true
                     };
                     
-                    Process.Start(startInfo);
+                    System.Diagnostics.Process.Start(startInfo);
                     
                     // 4. Close the settings form naturally so it doesn't block the graceful shutdown
                     Close();
