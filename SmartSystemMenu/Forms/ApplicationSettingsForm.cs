@@ -636,6 +636,7 @@ namespace SmartSystemMenu.Forms
 
             if (!settings.Equals(_settings))
             {
+                // This is the "program restart warning" window
                 MessageBox.Show(_settings.Language.GetValue("message_box_attention_content"), _settings.Language.GetValue("message_box_attention_title"), MessageBoxButtons.OK);
 
                 try
@@ -648,6 +649,24 @@ namespace SmartSystemMenu.Forms
                     {
                         OkClick.Invoke(this, new EventArgs<ApplicationSettings>(settings));
                     }
+
+                    // --- NEW RESTART LOGIC START ---
+                    // Create a hidden cmd process to wait 2 seconds, then restart the app.
+                    // This gives the old process ample time to safely kill the 64-bit child and free the single-instance Mutex.
+                    var startInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/c ping 127.0.0.1 -n 3 > nul & start \"\" \"{Application.ExecutablePath}\"",
+                        WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true
+                    };
+                    
+                    System.Diagnostics.Process.Start(startInfo);
+                    
+                    // Tell the current app to execute a graceful shutdown
+                    Application.Exit();
+                    return; 
+                    // --- NEW RESTART LOGIC END ---
                 }
                 catch (Exception ex)
                 {
