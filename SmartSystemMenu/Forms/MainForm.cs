@@ -230,6 +230,12 @@ namespace SmartSystemMenu.Forms
 
             if (Environment.Is64BitOperatingSystem && _64BitProcess != null && !_64BitProcess.HasExited)
             {
+                // --- NEW FIX: Directly signal the hidden 64-bit MainForm to close gracefully ---
+                if (_childHandle != IntPtr.Zero)
+                {
+                    PostMessage(_childHandle, WM_CLOSE, 0, 0);
+                }
+
                 foreach (var handle in _64BitProcess.GetWindowHandles())
                 {
                     PostMessage(handle, WM_CLOSE, 0, 0);
