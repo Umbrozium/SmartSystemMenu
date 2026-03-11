@@ -167,7 +167,7 @@ namespace SmartSystemMenu
                 return;
             }
 
-            foreach (var item in _menuItems.Items.Where(x => x.Show))
+            foreach (var item in _menuItems.Items)
             {
                 var id = MenuItemId.GetId(item.Name);
                 if (id > 0)
@@ -176,19 +176,22 @@ namespace SmartSystemMenu
                 }
                 else if (item.Type == MenuItemType.Separator)
                 {
-                    DeleteMenu(menuHandle, MenuItemId.SC_SEPARATOR, Constants.MF_SEPARATOR);
+                    // FIX 1: Use MF_BYCOMMAND instead of the invalid MF_SEPARATOR flag
+                    DeleteMenu(menuHandle, MenuItemId.SC_SEPARATOR, Constants.MF_BYCOMMAND);
                 }
             }
 
             DeleteMenu(menuHandle, MenuItemId.SC_SEPARATOR_BOTTOM, Constants.MF_BYCOMMAND);
 
+            // FIX 2: Because all separators share the same ID, DeleteMenu only removes the first one.
+            // Loop until all orphaned duplicate separators are purged.
+            while (DeleteMenu(menuHandle, MenuItemId.SC_SEPARATOR, Constants.MF_BYCOMMAND)) { }
+
             if (restoreMenu)
             {
-                var numberItems = GetMenuItemCount(menuHandle);
-                if (numberItems == DEFAULT_SYSTEM_MENU_NUMBER_ITEMS)
-                {
-                    GetSystemMenu(WindowHandle, true);
-                }
+                // FIX 3: Force the OS to perfectly regenerate the default system menu.
+                // This ensures any leftover artifacts are stripped and the language resets.
+                GetSystemMenu(WindowHandle, true);
             }
         }
 
