@@ -6,11 +6,27 @@ using System.Linq;
 using System.Drawing;
 using SmartSystemMenu.Settings;
 using SmartSystemMenu.Controls;
+using System.Runtime.InteropServices;
 
 namespace SmartSystemMenu.Forms
 {
     public partial class ApplicationSettingsForm : Form
     {
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+        delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+        static extern IntPtr PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        
         private readonly ApplicationSettings _settings;
         private readonly CloserSettings _closerSettings;
 
@@ -656,35 +672,36 @@ namespace SmartSystemMenu.Forms
                     }
 
                     // --- NEW RESTART LOGIC START ---
-                    // 1. Define paths
+                    // 1. Wipe all modified system menus across the entire OS natively.
+                    // This forces the language to reset and strips out all duplicate separators!
+                    EnumWindows((hWnd, lParam) =>
+                    {
+                        GetSystemMenu(hWnd, true);
+                        return true;
+                    }, IntPtr.Zero);
+
+                    // 2. Define script paths
                     var exePath = Path.Combine(AssemblyUtils.AssemblyDirectory, "SmartSystemMenu.exe");
                     var batPath = Path.Combine(Path.GetTempPath(), "SmartSystemMenuRestart.bat");
 
-                    // 2. Build the exact sequence of events
+                    // 3. Build the restart sequence (No taskkill for graceful close anymore!)
                     var script = $@"@echo off
-:: Give the settings window a moment to close
-ping 127.0.0.1 -n 2 > nul
-
-:: Gracefully close the 32-bit launcher (which triggers MainForm.OnClosed to delete the tray icon and close the 64-bit child)
-taskkill /IM SmartSystemMenu.exe > nul 2>&1
-
-:: Wait 3 seconds for the application to cleanly unhook and shut down
+:: Wait 3 seconds for the application to cleanly unhook the DLLs naturally
 ping 127.0.0.1 -n 4 > nul
 
-:: Force kill any stuck processes to guarantee the single-instance Mutex is released
+:: Force kill any stragglers just in case the single-instance Mutex is stuck
 taskkill /F /IM SmartSystemMenu.exe > nul 2>&1
 taskkill /F /IM SmartSystemMenu64.exe > nul 2>&1
 
 :: Wait 1 second
 ping 127.0.0.1 -n 2 > nul
 
-:: Start the 32-bit launcher again
+:: Launch the fresh 32-bit application
 start """" ""{exePath}""
 
-:: Self-destruct this temp file
+:: Self-destruct
 del ""%~f0""";
 
-                    // 3. Write and execute the script silently
                     File.WriteAllText(batPath, script);
 
                     var startInfo = new System.Diagnostics.ProcessStartInfo
@@ -696,8 +713,16 @@ del ""%~f0""";
                     
                     System.Diagnostics.Process.Start(startInfo);
                     
-                    // 4. Close the settings form naturally so it doesn't block the graceful shutdown
-                    Close();
+                    // 4. Politely ask the 32-bit Main Window to close itself.
+                    // This perfectly executes MainForm.OnClosed() -> unhooks DLLs and clears the Tray Icon!
+                    var handle = FindWindow(null, "SmartSystemMenu");
+                    if (handle != IntPtr.Zero)
+                    {
+                        PostMessage(handle, 0x0010 /* WM_CLOSE */, IntPtr.Zero, IntPtr.Zero);
+                    }
+
+                    // 5. Exit the current process (whether it's running in 32-bit or 64-bit)
+                    Application.Exit();
                     return; 
                     // --- NEW RESTART LOGIC END ---
                 }
