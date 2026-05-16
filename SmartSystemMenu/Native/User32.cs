@@ -48,6 +48,10 @@ namespace SmartSystemMenu.Native
         public static extern bool IsWindowVisible(IntPtr handle);
 
         [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
         public static extern IntPtr GetSystemMenu(IntPtr handle, bool revert);
 
         [DllImport("user32.dll")]

@@ -525,6 +525,11 @@ namespace SmartSystemMenu.Forms
 
         private void WindowDestroyed(object sender, WindowEventArgs e)
         {
+            if (sender is ShellHook && IsWindow(e.Handle))
+            {
+                return;
+            }
+
             var window = _windows.TryGetValue(e.Handle, out var win) ? win : null;
             if (window != null && !window.IsHidden)
             {
