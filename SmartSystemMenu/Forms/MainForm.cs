@@ -458,15 +458,16 @@ namespace SmartSystemMenu.Forms
                 var process = SystemUtils.GetProcessByIdSafely(processId);
                 var processPath = process?.GetMainModuleFileName() ?? string.Empty;
                 var fileName = Path.GetFileName(processPath);
-                if (!string.IsNullOrEmpty(fileName) &&
-                    _settings.ExcludedProcessItems.Select(x => x.Name).Contains(fileName.ToLower()) || !_settings.InitEventProcessNames.Contains(fileName.ToLower()))
-                {
-                    return;
-                }
-
                 var window = _windows.TryGetValue(e.WParam, out var win) ? win : null;
+                
                 if (window == null)
                 {
+                    if (!string.IsNullOrEmpty(fileName) &&
+                        _settings.ExcludedProcessItems.Select(x => x.Name).Contains(fileName.ToLower()) || !_settings.InitEventProcessNames.Contains(fileName.ToLower()))
+                    {
+                        return;
+                    }
+
                     window = new Window(e.WParam, _settings.MenuItems, _settings.Language);
                     CreateMenu(window, processId, processPath);
                 }
